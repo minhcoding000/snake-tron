@@ -12,8 +12,8 @@ pygame.init()
 
 #Game Configuration
 fps = 30                 #Speed of worm
-width = 1000
-height = 800
+width = pygame.display.Info().current_w
+height = pygame.display.Info().current_h
 score = 0
 bgColor = (0,0,0)
 snakeColor = (250,250,250)
@@ -55,22 +55,37 @@ YELLOW = (255,255,0)
 BLACK = (0,0,0)
 
 #Load Sound
-#song_loc = '/home/pi/mostec17/audio/'
-#sounds = ['wallCrash','self_crash','food_touch','snake_crash','di de','genghis_khan']
-#pygame.mixer.init()
-#pygame.mixer.music.load(song_loc+sounds[]+'.mp3')
-#pygame.mixer.music.play()
-#selfCrash = pygame.mixer.Sound('self_crash.wav')
-#selfCrash.play()
-#foodTouch = pygame.mixer.Sound(song_loc+sounds[2]+'.wav')
-#snakeCrash = pygame.mixer.Sound(song_loc+sounds[3]+'.wav')
+song_loc = '/home/pi/mostec17/audio/'
+sounds = ['snake_theme','wall','self_crash','food_touch','snake_crash','di de','genghis_khan']
+pygame.mixer.init()
+#Starter Song
+pygame.mixer.music.load(song_loc+sounds[0]+'.mp3')
+pygame.mixer.music.play(-1)
 
+
+#Sounds
+def playSound(num):
+    if num == 0:
+        pygame.mixer.music.load(song_loc+sounds[0]+'.mp3')
+        pygame.mixer.music.play()
+    elif num == 1:
+        pygame.mixer.music.load(song_loc+sounds[2]+'.mp3')
+        pygame.mixer.music.play(0)
+    elif num == 2:
+        pygame.mixer.music.load(song_loc+sounds[2]+'.mp3')
+        pygame.mixer.music.play(0)
+    elif num == 3:
+        pygame.mixer.music.load(song_loc+sounds[3]+'.wav')
+        pygame.mixer.music.play(0)
+    elif num == 4:
+        pygame.mixer.music.load(song_loc+sounds[4]+'.mp3')
+        pygame.mixer.music.play(0)
 #Class Declaration-----------------------------------------------------
 class Food:
     def __init__(self,surface):
         self.surface = surface
-        self.x = random.randint(20,width-20)
-        self.y = random.randint(20,height-20)
+        self.x = random.randint(30,width-30)
+        self.y = random.randint(30,height-30)
         self.color = foodColor
         
     def draw(self):
@@ -129,10 +144,13 @@ class Worm:
         r,g,b,a = self.surface.get_at((self.x,self.y))
 
         if (r,g,b) == snakeColor:
+            playSound(2)
             self.crashed = True
         elif (r,g,b) == wallColor:
+            playSound(1)
             self.crashed = True
         elif (r,g,b) == snake2Color:
+            playSound(4)
             self.crashed = True
             
         #if (self.x,self.y) in self.body:   
@@ -161,6 +179,7 @@ class Worm:
 
     def eat(self):            #Growing worm length 
         self.length += foodInc
+        playSound(3)
 
     def position(self):
         return self.x, self.y
@@ -196,7 +215,6 @@ class Worm2:
             self.vy = 0
 
     def move(self):
-        global wallCrash
         # "Movement" = Sequence of making a pixel for snake's head and then removing the end pixel
         self.x += self.vx                #Increment based on direction of x and y
         self.y += self.vy
@@ -204,10 +222,13 @@ class Worm2:
         r,g,b,a = self.surface.get_at((self.x,self.y))
 
         if (r,g,b) == snake2Color:
+            playSound(2)
             self.crashed = True
         elif (r,g,b) == wallColor:
+            playSound(1)
             self.crashed = True
         elif (r,g,b) == snakeColor:
+            playSound(4)
             self.crashed = True
         #if (self.x,self.y) in self.body:   
          #   self.crashed = True
@@ -231,6 +252,7 @@ class Worm2:
 
     def eat(self):            
         self.length += foodInc
+        playSound(3)
 
     def position(self):
         return self.x, self.y
@@ -248,7 +270,7 @@ def main():
         elif players == "2":
             result = gameRun2()
         if result == 1:
-            terminate()
+            terminate(False)
             while True:
                 qac = input("Restart? (y/n))")
                 if qac == "y" or qac == "n":
@@ -263,7 +285,7 @@ def main():
                 print("Ending game...")
                 break
         if result == 2:
-            terminate()
+            terminate(False)
             while True:
                 qac = input("Restart? (y/n))")
                 if qac == "y" or qac == "n":
@@ -277,14 +299,14 @@ def main():
             elif qac == "n":
                 print("Ending game...")
                 break           
-    terminate()
+    terminate(True)
     
         
 #Initialize
 def gameRun():
     global screen
     global score
-    screen = pygame.display.set_mode((width,height),pygame.RESIZABLE)
+    screen = pygame.display.set_mode((width,height),pygame.FULLSCREEN)
     w = Worm(screen)
     f = Food(screen)
     screen.fill(bgColor)
@@ -328,7 +350,7 @@ def gameRun2():
     global amount
     global screen
     global score
-    screen = pygame.display.set_mode((width,height),pygame.RESIZABLE)
+    screen = pygame.display.set_mode((width,height),pygame.FULLSCREEN)
     w = Worm(screen)
     w2 = Worm2(screen)
     f = Food(screen)
@@ -382,9 +404,10 @@ def gameRun2():
         clock.tick(fps)
     time.sleep(3)
     return 2
-def terminate():
+def terminate(par):
     pygame.display.quit()
-    pygame.quit()
+    if par == True:
+        pygame.quit()
 
 def getPlayers():
     passed = False
